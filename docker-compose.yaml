@@ -103,7 +103,7 @@ services:
       - "${SERVER_PORT:-3003}:${SERVER_PORT:-3003}"
       - "${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}"
     volumes:
-      - ./packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml:ro
+      - ./packages/providers/providers.yaml
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:${SERVER_PORT:-3003}/health || exit 1"]
       interval: 10s
