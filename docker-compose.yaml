@@ -59,7 +59,7 @@ services:
     environment:
       # Ports
       SERVER_PORT: ${SERVER_PORT:-3003}
-      CONNECT_UI_PORT: ${CONNECT_UI_PORT:-3009}
+      NANGO_CONNECT_UI_PORT: ${NANGO_CONNECT_UI_PORT:-3009}
 
       # Required
       NANGO_ENCRYPTION_KEY: ${NANGO_ENCRYPTION_KEY}
@@ -101,7 +101,7 @@ services:
     # If you're NOT using Traefik yet, expose ports locally:
     ports:
       - "${SERVER_PORT:-3003}:${SERVER_PORT:-3003}"
-      - "${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}"
+      - "${NANGO_CONNECT_UI_PORT:-3009}:${NANGO_CONNECT_UI_PORT:-3009}"
     volumes:
       - ./packages/providers/providers.yaml:/packages/providers/providers.yaml:ro
     healthcheck:
@@ -126,4 +126,4 @@ services:
       traefik.http.routers.nango-connect.rule: "Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)"
       traefik.http.routers.nango-connect.entrypoints: "websecure"
       traefik.http.routers.nango-connect.tls: "true"
-      traefik.http.services.nango-connect.loadbalancer.server.port: "${CONNECT_UI_PORT:-3009}"
+      traefik.http.services.nango-connect.loadbalancer.server.port: "${NANGO_CONNECT_UI_PORT:-3009}"
