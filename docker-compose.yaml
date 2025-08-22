@@ -2,7 +2,7 @@ version: "3.9"
 
 networks:
   nango:
-  traefik:            # if your Traefik stack uses an external network
+  traefik:
     external: true
 
 volumes:
