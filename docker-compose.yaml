@@ -128,3 +128,7 @@ services:
       traefik.http.routers.nango-connect.entrypoints: "websecure"
       traefik.http.routers.nango-connect.tls: "true"
       traefik.http.services.nango-connect.loadbalancer.server.port: "${NANGO_CONNECT_UI_PORT:-3009}"
+
+      # --- Custom middleware to override headers ---
+      traefik.http.middlewares.nango-headers.headers.customResponseHeaders.X-Frame-Options: "ALLOWALL"
+      traefik.http.middlewares.nango-headers.headers.customResponseHeaders.Content-Security-Policy: "frame-ancestors *"
