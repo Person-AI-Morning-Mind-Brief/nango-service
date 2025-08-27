@@ -18,8 +18,8 @@ services:
       POSTGRES_PASSWORD: ${NANGO_DB_PASSWORD:-nango}
       POSTGRES_DB: ${NANGO_DB_NAME:-nango}
     # (optional) expose if you really need host access; otherwise remove
-    ports:
-      - "15432:5432"
+    # ports:
+    #   - "15432:5432"
     volumes:
       - nango_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -91,9 +91,9 @@ services:
       CSP_REPORT_ONLY: ${CSP_REPORT_ONLY:-true}
 
     # no host ports when using Traefik
-    # ports:
-    #   - "3003:3003"
-    #   - "3009:3009"
+    ports:
+      - "3003:3003"
+      - "3009:3009"
 
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:${SERVER_PORT:-3003}/health || exit 1"]
@@ -140,13 +140,3 @@ services:
       # allow embedding & websocket friendly headers (only if you truly need iframes)
       traefik.http.middlewares.nango-headers.headers.customResponseHeaders.X-Frame-Options: ALLOWALL
       traefik.http.middlewares.nango-headers.headers.customResponseHeaders.Content-Security-Policy: frame-ancestors *;
-
-    # --- Redirect '/' to '/dev' ---
-      traefik.http.routers.nango-root.rule: Host(`nango.csa.competera.com`) && Path(`/`)
-      traefik.http.routers.nango-root.entrypoints: websecure
-      traefik.http.routers.nango-root.tls: "true"
-      traefik.http.routers.nango-root.tls.certresolver: letsencrypt
-      traefik.http.routers.nango-root.middlewares: nango-root-redirect
-
-      traefik.http.middlewares.nango-root-redirect.redirectregex.regex: ^/$
-      traefik.http.middlewares.nango-root-redirect.redirectregex.replacement: /dev
