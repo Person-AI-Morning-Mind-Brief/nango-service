@@ -99,25 +99,52 @@ services:
       traefik.enable: "true"
       traefik.docker.network: a8sk8cg0swg0ww0w0ogoowog
 
-      # API (3003) via HTTPS
+      # === API (port 3003) ===
       traefik.http.routers.nango.rule: Host(`nango.csa.competera.com`)
       traefik.http.routers.nango.entrypoints: https
       traefik.http.routers.nango.tls: "true"
       traefik.http.routers.nango.tls.certresolver: letsencrypt
       traefik.http.services.nango.loadbalancer.server.port: "3003"
 
-      # Connect UI (3009) at /connect
+      # === Connect UI (port 3009) – main shell under /connect ===
       traefik.http.routers.nango-connect.rule: Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)
       traefik.http.routers.nango-connect.entrypoints: https
       traefik.http.routers.nango-connect.tls: "true"
       traefik.http.routers.nango-connect.tls.certresolver: letsencrypt
       traefik.http.services.nango-connect.loadbalancer.server.port: "3009"
 
-      # Optional: redirect "/" → "/dev"
+      # === Connect UI static assets (also served by the UI on 3009) ===
+      # Assets bundle
+      traefik.http.routers.nango-assets.rule: Host(`nango.csa.competera.com`) && PathPrefix(`/assets`)
+      traefik.http.routers.nango-assets.entrypoints: https
+      traefik.http.routers.nango-assets.tls: "true"
+      traefik.http.routers.nango-assets.tls.certresolver: letsencrypt
+      traefik.http.services.nango-assets.loadbalancer.server.port: "3009"
+
+      # env.js (UI bootstraps with this)
+      traefik.http.routers.nango-env.rule: Host(`nango.csa.competera.com`) && Path(`/env.js`)
+      traefik.http.routers.nango-env.entrypoints: https
+      traefik.http.routers.nango-env.tls: "true"
+      traefik.http.routers.nango-env.tls.certresolver: letsencrypt
+      traefik.http.services.nango-env.loadbalancer.server.port: "3009"
+
+      # favicon & manifest (nice-to-have)
+      traefik.http.routers.nango-favicon.rule: Host(`nango.csa.competera.com`) && Path(`/favicon.ico`)
+      traefik.http.routers.nango-favicon.entrypoints: https
+      traefik.http.routers.nango-favicon.tls: "true"
+      traefik.http.routers.nango-favicon.tls.certresolver: letsencrypt
+      traefik.http.services.nango-favicon.loadbalancer.server.port: "3009"
+
+      traefik.http.routers.nango-manifest.rule: Host(`nango.csa.competera.com`) && Path(`/manifest.json`)
+      traefik.http.routers.nango-manifest.entrypoints: https
+      traefik.http.routers.nango-manifest.tls: "true"
+      traefik.http.routers.nango-manifest.tls.certresolver: letsencrypt
+      traefik.http.services.nango-manifest.loadbalancer.server.port: "3009"
+
+      # === Optional: redirect "/" → "/dev" (dashboard env) ===
       traefik.http.routers.nango-root.rule: Host(`nango.csa.competera.com`) && Path(`/`)
       traefik.http.routers.nango-root.entrypoints: https
       traefik.http.routers.nango-root.tls: "true"
-      traefik.http.routers.nango-root.tls.certresolver: letsencrypt
       traefik.http.routers.nango-root.middlewares: nango-root-redirect
       traefik.http.middlewares.nango-root-redirect.redirectregex.regex: ^/$
       traefik.http.middlewares.nango-root-redirect.redirectregex.replacement: /dev
