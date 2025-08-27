@@ -140,3 +140,13 @@ services:
       # allow embedding & websocket friendly headers (only if you truly need iframes)
       traefik.http.middlewares.nango-headers.headers.customResponseHeaders.X-Frame-Options: ALLOWALL
       traefik.http.middlewares.nango-headers.headers.customResponseHeaders.Content-Security-Policy: frame-ancestors *;
+
+    # --- Redirect '/' to '/dev' ---
+      traefik.http.routers.nango-root.rule: Host(`nango.csa.competera.com`) && Path(`/`)
+      traefik.http.routers.nango-root.entrypoints: websecure
+      traefik.http.routers.nango-root.tls: "true"
+      traefik.http.routers.nango-root.tls.certresolver: letsencrypt
+      traefik.http.routers.nango-root.middlewares: nango-root-redirect
+
+      traefik.http.middlewares.nango-root-redirect.redirectregex.regex: ^/$
+      traefik.http.middlewares.nango-root-redirect.redirectregex.replacement: /dev
