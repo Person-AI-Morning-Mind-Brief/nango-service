@@ -133,4 +133,4 @@ services:
 
     # --- Custom middleware to override headers ---
     - traefik.http.middlewares.allow-iframe.headers.customResponseHeaders.X-Frame-Options=
-    - traefik.http.middlewares.nango-headers.headers.customResponseHeaders.Content-Security-Policy=frame-ancestors *
+    - traefik.http.middlewares.allow-iframe.headers.customResponseHeaders.Content-Security-Policy='frame-ancestors *'
