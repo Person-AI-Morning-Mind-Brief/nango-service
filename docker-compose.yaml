@@ -61,7 +61,7 @@ services:
 
       # Required secrets
       NANGO_ENCRYPTION_KEY: ${NANGO_ENCRYPTION_KEY}
-      NANGO_SECRET_KEY: 9e62c8e4-77b4-4e7b-b634-7f7a87b5d19c
+      NANGO_SECRET_KEY: ${NANGO_SECRET_KEY}
 
       # Database
       NANGO_DB_HOST: nango-db
@@ -82,7 +82,7 @@ services:
       # Dashboard auth
       FLAG_AUTH_ENABLED: true
       NANGO_DASHBOARD_USERNAME: admin
-      NANGO_DASHBOARD_PASSWORD: H@ck3r!$$Sk!!llz#%F1r3w@ll^&Sh@d0w$*Cyb3rn3t!c
+      NANGO_DASHBOARD_PASSWORD: ${NANGO_DASHBOARD_PASSWORD}
 
       # Connect UI
       FLAG_SERVE_CONNECT_UI: true
