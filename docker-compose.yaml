@@ -103,7 +103,7 @@ services:
       - ./packages/providers/providers.yaml:/packages/providers/providers.yaml:ro
 
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3003/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:3003/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -115,8 +115,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "a8sk8cg0swg0ww0w0ogoowog"
-      traefik.http.routers.nango.rule: "Host(`nango.csa.competera.com`)"
-      traefik.http.routers.nango.entrypoints: "https"
-      traefik.http.routers.nango.tls: "true"
-      traefik.http.routers.nango.tls.certresolver: "letsencrypt"
-      traefik.http.services.nango.loadbalancer.server.port: "3003"
+
+      # HTTPS router for API
+      traefik.http.routers.nango-main.rule: "Host(`nango.csa.competera.com`)"
+      traefik.http.routers.nango-main.entrypoints: "https"
+      traefik.http.routers.nango-main.tls: "true"
+      traefik.http.routers.nango-main.tls.certresolver: "letsencrypt"
+
+      # Backend service (API listens on 3003)
+      traefik.http.services.nango-main.loadbalancer.server.port: "3003"
