@@ -116,21 +116,20 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=a8sk8cg0swg0ww0w0ogoowog"
 
-      # --- Plain HTTP router that actually forwards to the app (no TLS) ---
-      # This gives ACME a clean path and proves the router matches.
+      # Plain HTTP router (no TLS) – lets ACME validate cleanly & quick local checks
       - "traefik.http.routers.nango-http.rule=Host(`nango.csa.competera.com`)"
       - "traefik.http.routers.nango-http.entrypoints=http"
       - "traefik.http.routers.nango-http.tls=false"
       - "traefik.http.routers.nango-http.service=nango"
 
-      # --- HTTPS API (3003) ---
+      # HTTPS API (3003)
       - "traefik.http.routers.nango.rule=Host(`nango.csa.competera.com`)"
       - "traefik.http.routers.nango.entrypoints=https"
       - "traefik.http.routers.nango.tls=true"
       - "traefik.http.routers.nango.tls.certresolver=letsencrypt"
       - "traefik.http.routers.nango.service=nango"
 
-      # --- HTTPS Connect UI at /connect (3009) ---
+      # HTTPS Connect UI at /connect (3009)
       - "traefik.http.routers.nango-connect.rule=Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)"
       - "traefik.http.routers.nango-connect.entrypoints=https"
       - "traefik.http.routers.nango-connect.tls=true"
