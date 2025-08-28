@@ -2,8 +2,8 @@ version: "3.9"
 
 networks:
   nango:
-  traefik:
-    external: true   # <-- Must match the real external Traefik network name in Coolify
+  proxy_net:
+    external: true   # Coolify's external proxy network (same one Keycloak uses)
 
 volumes:
   nango_db_data:
@@ -101,11 +101,11 @@ services:
 
     networks:
       - nango
-      - traefik
+      - proxy_net   # <-- moved from 'traefik' to Coolify's proxy network
 
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik
+      - traefik.docker.network=a8sk8cg0swg0ww0w0ogoowog  # <-- match Coolify's proxy net
 
       # ===== HTTPS: API router (port 3003) =====
       - traefik.http.routers.nango.rule=Host(`nango.csa.competera.com`)
@@ -138,7 +138,7 @@ services:
 # --- Optional: separate subdomain for Connect UI ---
 # Change the connect router rule and set NANGO_PUBLIC_CONNECT_URL accordingly
 #      - "traefik.http.routers.nango-connect.rule=Host(`connect.csa.competera.com`)"
-#      - "traefik.http.routers.nango-connect.entrypoints=websecure,https"
+#      - "traefik.http.routers.nango-connect.entrypoints=https"
 #      - "traefik.http.routers.nango-connect.tls=true"
 #      - "traefik.http.routers.nango-connect.tls.certresolver=letsencrypt"
 #      - "traefik.http.services.nango-connect.loadbalancer.server.port=3009"
