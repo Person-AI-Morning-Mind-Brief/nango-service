@@ -100,9 +100,6 @@ services:
       # (If Nango supports Redis env, add it here; otherwise leave internal/defaults)
       # NANGO_REDIS_URL: redis://nango-redis:6379
     # If you're NOT using Traefik yet, expose ports locally:
-    ports:
-      - "${SERVER_PORT:-3003}:${SERVER_PORT:-3003}"
-      - "${NANGO_CONNECT_UI_PORT:-3009}:${NANGO_CONNECT_UI_PORT:-3009}"
     volumes:
       - ./packages/providers/providers.yaml:/packages/providers/providers.yaml:ro
     healthcheck:
