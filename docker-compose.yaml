@@ -3,7 +3,7 @@ version: "3.9"
 networks:
   nango:
   traefik:
-    external: true
+    external: true   # <-- Must match the real external Traefik network name in Coolify
 
 volumes:
   nango_db_data:
@@ -74,11 +74,10 @@ services:
       # Public URLs (HTTPS via Traefik)
       NANGO_SERVER_URL: ${NANGO_SERVER_URL:-https://nango.csa.competera.com}
       NANGO_PUBLIC_SERVER_URL: ${NANGO_PUBLIC_SERVER_URL:-https://nango.csa.competera.com}
+      NANGO_PUBLIC_CONNECT_URL: ${NANGO_PUBLIC_CONNECT_URL:-https://nango.csa.competera.com/connect}
 
       # Connect UI + websockets
       FLAG_SERVE_CONNECT_UI: ${FLAG_SERVE_CONNECT_UI:-true}
-      # If serving Connect under the same host at /connect, expose it here:
-      NANGO_PUBLIC_CONNECT_URL: ${NANGO_PUBLIC_CONNECT_URL:-https://nango.csa.competera.com/connect}
       NANGO_SERVER_WEBSOCKETS_PATH: ${NANGO_SERVER_WEBSOCKETS_PATH:-/socket}
 
       # Dashboard auth
@@ -118,6 +117,8 @@ services:
 
     labels:
       - "traefik.enable=true"
+      # IMPORTANT when multiple docker networks exist: tell Traefik which to use
+      - "traefik.docker.network=traefik"
 
       # ===================
       #  HTTPS: API router
@@ -125,11 +126,12 @@ services:
       - "traefik.http.routers.nango.rule=Host(`nango.csa.competera.com`)"
       - "traefik.http.routers.nango.entrypoints=websecure"
       - "traefik.http.routers.nango.tls=true"
-      # Uncomment if your Traefik uses a named resolver (common on Coolify):
+      # Use your actual resolver name from Coolify's Traefik settings (often 'letsencrypt')
       - "traefik.http.routers.nango.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nango.service=nango"
       - "traefik.http.services.nango.loadbalancer.server.port=${SERVER_PORT:-3003}"
 
-      # HTTP -> HTTPS redirect for API host
+      # HTTP -> HTTPS redirect for API host (keeps :80 open for ACME HTTP-01)
       - "traefik.http.routers.nango-http.rule=Host(`nango.csa.competera.com`)"
       - "traefik.http.routers.nango-http.entrypoints=web"
       - "traefik.http.routers.nango-http.middlewares=nango-https"
@@ -143,9 +145,18 @@ services:
       - "traefik.http.routers.nango-connect.entrypoints=websecure"
       - "traefik.http.routers.nango-connect.tls=true"
       - "traefik.http.routers.nango-connect.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nango-connect.service=nango-connect"
       - "traefik.http.services.nango-connect.loadbalancer.server.port=${NANGO_CONNECT_UI_PORT:-3009}"
 
       # Optional: basic security header tweak you already had
       - "traefik.http.middlewares.allow-iframe.headers.customResponseHeaders.Content-Security-Policy=frame-ancestors *"
       - "traefik.http.routers.nango.middlewares=allow-iframe"
       - "traefik.http.routers.nango-connect.middlewares=allow-iframe"
+
+# --- Optional alternative: serve Connect UI on its own host ---
+# Add these labels (and set NANGO_PUBLIC_CONNECT_URL=https://connect.csa.competera.com)
+#      - "traefik.http.routers.nango-connect.rule=Host(`connect.csa.competera.com`)"
+#      - "traefik.http.routers.nango-connect.entrypoints=websecure"
+#      - "traefik.http.routers.nango-connect.tls=true"
+#      - "traefik.http.routers.nango-connect.tls.certresolver=letsencrypt"
+#      - "traefik.http.services.nango-connect.loadbalancer.server.port=${NANGO_CONNECT_UI_PORT:-3009}"
