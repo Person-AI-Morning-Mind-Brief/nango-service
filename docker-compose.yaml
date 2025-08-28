@@ -124,15 +124,14 @@ services:
       - traefik.http.routers.nango-connect.service=nango-connect
       - traefik.http.services.nango-connect.loadbalancer.server.port=3009
 
-      # (optional) security headers you had
+      # ===== HTTP -> HTTPS redirect (helps ACME + UX) =====
+      - traefik.http.routers.nango-http.rule=Host(`nango.csa.competera.com`)
+      - traefik.http.routers.nango-http.entrypoints=http
+      - traefik.http.routers.nango-http.middlewares=nango-https
+      - traefik.http.middlewares.nango-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.nango-https.redirectscheme.permanent=true
+
+      # optional security header
       - traefik.http.middlewares.allow-iframe.headers.customResponseHeaders.Content-Security-Policy=frame-ancestors *
       - traefik.http.routers.nango.middlewares=allow-iframe
       - traefik.http.routers.nango-connect.middlewares=allow-iframe
-
-# --- Optional: separate subdomain for Connect UI ---
-# Change the connect router rule and set NANGO_PUBLIC_CONNECT_URL accordingly
-#      - "traefik.http.routers.nango-connect.rule=Host(`connect.csa.competera.com`)"
-#      - "traefik.http.routers.nango-connect.entrypoints=https"
-#      - "traefik.http.routers.nango-connect.tls=true"
-#      - "traefik.http.routers.nango-connect.tls.certresolver=letsencrypt"
-#      - "traefik.http.services.nango-connect.loadbalancer.server.port=3009"
