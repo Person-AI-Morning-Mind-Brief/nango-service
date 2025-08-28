@@ -61,12 +61,12 @@ services:
       # DB (internal hostnames)
       NANGO_DB_HOST: nango-db
       NANGO_DB_USER: nango
-      NANGO_DB_PASSWORD: nango
+      NANGO_DB_PASSWORD: super-secret
       NANGO_DB_NAME: nango
       NANGO_DB_SSL: false
       NANGO_DB_POOL_MIN: 2
       NANGO_DB_POOL_MAX: 10
-      RECORDS_DATABASE_URL: postgresql://nango:nango@nango-db:5432/nango
+      RECORDS_DATABASE_URL: postgresql://nango:super-secret@nango-db:5432/nango
 
       # Public URLs (HTTPS via Traefik)
       NANGO_SERVER_URL: https://nango.csa.competera.com
