@@ -131,5 +131,10 @@ services:
     - traefik.http.routers.nango-connect.tls=true
     - traefik.http.services.nango-connect.loadbalancer.server.port=${NANGO_CONNECT_UI_PORT:-3009}
 
+    # HTTP -> HTTPS redirect for root
+    - traefik.http.routers.nango-root-http.rule=Host(`nango.csa.competera.com`) && Path(`/`)
+    - traefik.http.routers.nango-root-http.entrypoints=web
+    - traefik.http.routers.nango-root-http.middlewares=redirect-https
+
     # --- Custom middleware to override headers ---
     - traefik.http.middlewares.allow-iframe.headers.customResponseHeaders.Content-Security-Policy='frame-ancestors *'
