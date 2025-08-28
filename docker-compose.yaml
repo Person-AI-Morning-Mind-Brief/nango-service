@@ -2,7 +2,7 @@ version: "3.9"
 
 networks:
   nango:
-  proxy_net:
+  platform-net:
     external: true   # Coolify's external proxy network (same one keycloak uses)
     name: a8sk8cg0swg0ww0w0ogoowog  # map to the actual existing Docker network name
 
@@ -110,7 +110,7 @@ services:
 
     networks:
       - nango
-      - proxy_net
+      - platform-net
 
     labels:
       - "traefik.enable=true"
