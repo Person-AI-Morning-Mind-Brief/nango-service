@@ -124,3 +124,6 @@ services:
 
       # Backend service (API listens on 3003)
       traefik.http.services.nango-main.loadbalancer.server.port: "3003"
+
+      # HTTP router for API
+      traefik.http.routers.nango-http.rule: "Host(`nango.csa.competera.com`)"
