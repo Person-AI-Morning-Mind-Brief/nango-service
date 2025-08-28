@@ -3,7 +3,8 @@ version: "3.9"
 networks:
   nango:
   proxy_net:
-    external: true   # Coolify's external proxy network (same one Keycloak uses)
+    external: true   # Coolify's external proxy network (same one keycloak uses)
+    name: a8sk8cg0swg0ww0w0ogoowog  # map to the actual existing Docker network name
 
 volumes:
   nango_db_data:
@@ -101,26 +102,19 @@ services:
 
     networks:
       - nango
-      - proxy_net   # <-- moved from 'traefik' to Coolify's proxy network
+      - proxy_net
 
     labels:
       - traefik.enable=true
-      - traefik.docker.network=a8sk8cg0swg0ww0w0ogoowog  # <-- match Coolify's proxy net
+      - traefik.docker.network=a8sk8cg0swg0ww0w0ogoowog
 
-      # ===== HTTPS: API router (port 3003) =====
+      # ===== HTTPS only: API router (port 3003) =====
       - traefik.http.routers.nango.rule=Host(`nango.csa.competera.com`)
       - traefik.http.routers.nango.entrypoints=https
       - traefik.http.routers.nango.tls=true
       - traefik.http.routers.nango.tls.certresolver=letsencrypt
       - traefik.http.routers.nango.service=nango
       - traefik.http.services.nango.loadbalancer.server.port=3003
-
-      # ===== HTTP -> HTTPS redirect (port 80) =====
-      - traefik.http.routers.nango-http.rule=Host(`nango.csa.competera.com`)
-      - traefik.http.routers.nango-http.entrypoints=http
-      - traefik.http.routers.nango-http.middlewares=nango-https
-      - traefik.http.middlewares.nango-https.redirectscheme.scheme=https
-      - traefik.http.middlewares.nango-https.redirectscheme.permanent=true
 
       # ===== Connect UI at /connect (port 3009) =====
       - traefik.http.routers.nango-connect.rule=Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)
