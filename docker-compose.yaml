@@ -112,18 +112,18 @@ services:
       - nango
       - platform-net
 
-    # labels:
-      # traefik.enable: "true"
-      # traefik.docker.network: "a8sk8cg0swg0ww0w0ogoowog"
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "a8sk8cg0swg0ww0w0ogoowog"
 
-      # # HTTPS router for API
-      # traefik.http.routers.nango-main.rule: "Host(`nango.csa.competera.com`)"
-      # traefik.http.routers.nango-main.entrypoints: "https"
-      # traefik.http.routers.nango-main.tls: "true"
-      # traefik.http.routers.nango-main.tls.certresolver: "letsencrypt"
+      # HTTPS router for API
+      traefik.http.routers.nango-main.rule: Host("nango.csa.competera.com")
+      traefik.http.routers.nango-main.entrypoints: "https"
+      traefik.http.routers.nango-main.tls: "true"
+      traefik.http.routers.nango-main.tls.certresolver: "letsencrypt"
 
-      # # Backend service (API listens on 3003)
-      # traefik.http.services.nango-main.loadbalancer.server.port: "3003"
+      # Backend service (API listens on 3003)
+      traefik.http.services.nango-main.loadbalancer.server.port: "3003"
 
-      # # HTTP router for API
-      # traefik.http.routers.nango-http.rule: "Host(`nango.csa.competera.com`)"
+      # HTTP router for API
+      traefik.http.routers.nango-http.rule: Host("nango.csa.competera.com")
