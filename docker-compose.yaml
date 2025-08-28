@@ -111,7 +111,7 @@ services:
       - "traefik.http.routers.nango.rule=Host(`nango.csa.competera.com`)"
       - "traefik.http.routers.nango.entrypoints=websecure,https"
       - "traefik.http.routers.nango.tls=true"
-      - "traefik.http.routers.nango.tls.certresolver=acme"
+      - "traefik.http.routers.nango.tls.certresolver=letsencrypt"
       - "traefik.http.routers.nango.service=nango"
       - "traefik.http.services.nango.loadbalancer.server.port=3003"
 
@@ -126,7 +126,7 @@ services:
       - "traefik.http.routers.nango-connect.rule=Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)"
       - "traefik.http.routers.nango-connect.entrypoints=websecure,https"
       - "traefik.http.routers.nango-connect.tls=true"
-      - "traefik.http.routers.nango-connect.tls.certresolver=acme"
+      - "traefik.http.routers.nango-connect.tls.certresolver=letsencrypt"
       - "traefik.http.routers.nango-connect.service=nango-connect"
       - "traefik.http.services.nango-connect.loadbalancer.server.port=3009"
 
@@ -140,5 +140,5 @@ services:
 #      - "traefik.http.routers.nango-connect.rule=Host(`connect.csa.competera.com`)"
 #      - "traefik.http.routers.nango-connect.entrypoints=websecure,https"
 #      - "traefik.http.routers.nango-connect.tls=true"
-#      - "traefik.http.routers.nango-connect.tls.certresolver=acme"
+#      - "traefik.http.routers.nango-connect.tls.certresolver=letsencrypt"
 #      - "traefik.http.services.nango-connect.loadbalancer.server.port=3009"
