@@ -114,17 +114,23 @@ services:
       - nango
       - traefik
     labels:
-      # --- Traefik (adjust names/entrypoints to your stack) ---
-      traefik.enable: "true"
 
-      # API (port 3003)
-      traefik.http.routers.nango.rule: "Host(`nango.csa.competera.com`)"
-      traefik.http.routers.nango.entrypoints: "websecure"
-      traefik.http.routers.nango.tls: "true"
-      traefik.http.services.nango.loadbalancer.server.port: "${SERVER_PORT:-3003}"
+    # --- Traefik (adjust names/entrypoints to your stack) ---
+    - traefik.enable=true
 
-      # Connect UI (port 3009) – separate router (optional)
-      traefik.http.routers.nango-connect.rule: "Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)"
-      traefik.http.routers.nango-connect.entrypoints: "websecure"
-      traefik.http.routers.nango-connect.tls: "true"
-      traefik.http.services.nango-connect.loadbalancer.server.port: "${NANGO_CONNECT_UI_PORT:-3009}"
+    # API (port 3003)
+    - traefik.http.routers.nango.rule=Host(`nango.csa.competera.com`)
+    - traefik.http.routers.nango.entrypoints=websecure
+    - traefik.http.routers.nango.tls=true
+    - traefik.http.services.nango.loadbalancer.server.port=${SERVER_PORT:-3003}
+    - traefik.http.routers.nango.middlewares=allow-iframe
+
+    # Connect UI (port 3009) – separate router (optional)
+    - traefik.http.routers.nango-connect.rule=Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)
+    - traefik.http.routers.nango-connect.entrypoints=websecure
+    - traefik.http.routers.nango-connect.tls=true
+    - traefik.http.services.nango-connect.loadbalancer.server.port=${NANGO_CONNECT_UI_PORT:-3009}
+
+    # --- Custom middleware to override headers ---
+    - traefik.http.middlewares.allow-iframe.headers.customResponseHeaders.X-Frame-Options=
+    - traefik.http.middlewares.nango-headers.headers.customResponseHeaders.Content-Security-Policy=frame-ancestors *
