@@ -114,9 +114,19 @@ services:
 
     labels:
       traefik.enable: "true"
-      traefik.docker.network: a8sk8cg0swg0ww0w0ogoowog
+      traefik.docker.network: "a8sk8cg0swg0ww0w0ogoowog"
+
+      # HTTPS router (main app)
       traefik.http.routers.nango.rule: "Host(`nango.csa.competera.com`)"
-      traefik.http.routers.nango.entrypoints: "https"
+      traefik.http.routers.nango.entrypoints: "websecure"
       traefik.http.routers.nango.tls: "true"
       traefik.http.routers.nango.tls.certresolver: "letsencrypt"
+
+      # HTTP -> HTTPS redirect
+      traefik.http.routers.nango-http.rule: "Host(`nango.csa.competera.com`)"
+      traefik.http.routers.nango-http.entrypoints: "web"
+      traefik.http.routers.nango-http.middlewares: "redirect-to-https"
+      traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: "https"
+
+      # Upstream port Nango listens on
       traefik.http.services.nango.loadbalancer.server.port: "3003"
