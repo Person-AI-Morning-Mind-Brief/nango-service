@@ -2,9 +2,8 @@ version: "3.9"
 
 networks:
   nango:
-  a8sk8cg0swg0ww0w0ogoowog:
-    external: true   # Coolify's external proxy network (same one keycloak uses)
-    name: a8sk8cg0swg0ww0w0ogoowog  # map to the actual existing Docker network name
+  traefik:
+    external: true
 
 volumes:
   nango_db_data:
@@ -18,6 +17,9 @@ services:
       POSTGRES_USER: ${NANGO_DB_USER:-nango}
       POSTGRES_PASSWORD: ${NANGO_DB_PASSWORD:-nango}
       POSTGRES_DB: ${NANGO_DB_NAME:-nango}
+    # Don't expose 5432 on the host—use the internal network only
+    ports:
+      - "15432:5432"
     volumes:
       - nango_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -32,6 +34,7 @@ services:
     image: redis:7.2.4
     container_name: nango-redis
     restart: unless-stopped
+    # ports: []   # internal only
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -42,7 +45,10 @@ services:
       - nango
 
   nango-server:
+    # Choose ONE of the below:
     image: nangohq/nango-server:hosted-0.67.0
+    # image: nangohq/nango-server:hosted-444e1ca1adaf6b0d65289d3a6531d8897a84b7dd
+    # or: image: nangohq/nango-server@sha256:...   # after you inspect/pin the digest
     container_name: nango-server
     platform: linux/amd64
     restart: unless-stopped
@@ -52,81 +58,73 @@ services:
       nango-redis:
         condition: service_healthy
     environment:
-      # Networking / bind
-      SERVER_PORT: 3003
-      NANGO_CONNECT_UI_PORT: 3009
-      SERVER_HOST: 0.0.0.0
-      NANGO_SERVER_HOST: 0.0.0.0
-      HOST: 0.0.0.0
+      # Ports
+      SERVER_PORT: ${SERVER_PORT:-3003}
+      NANGO_CONNECT_UI_PORT: ${NANGO_CONNECT_UI_PORT:-3009}
 
-      # Required secrets
+      # Required
       NANGO_ENCRYPTION_KEY: ${NANGO_ENCRYPTION_KEY}
-      NANGO_SECRET_KEY: ${NANGO_SECRET_KEY}
 
-      # Database
-      NANGO_DB_HOST: nango-db
-      NANGO_DB_USER: nango
-      NANGO_DB_PASSWORD: super-secret
-      NANGO_DB_NAME: nango
-      NANGO_DB_SSL: false
-      NANGO_DB_POOL_MIN: 2
-      NANGO_DB_POOL_MAX: 10
-      RECORDS_DATABASE_URL: postgresql://nango:super-secret@nango-db:5432/nango
+      # DB (internal hostnames)
+      NANGO_DB_HOST: ${NANGO_DB_HOST:-nango-db}
+      NANGO_DB_USER: ${NANGO_DB_USER:-nango}
+      NANGO_DB_PASSWORD: ${NANGO_DB_PASSWORD:-nango}
+      NANGO_DB_NAME: ${NANGO_DB_NAME:-nango}
+      NANGO_DB_SSL: ${NANGO_DB_SSL:-false}
+      NANGO_DB_POOL_MIN: ${NANGO_DB_POOL_MIN:-2}
+      NANGO_DB_POOL_MAX: ${NANGO_DB_POOL_MAX:-10}
+      RECORDS_DATABASE_URL: ${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
 
-      # Public URLs (Traefik handles TLS)
-      NANGO_SERVER_URL: https://nango.csa.competera.com
-      NANGO_PUBLIC_SERVER_URL: https://nango.csa.competera.com
-      NANGO_PUBLIC_CONNECT_URL: https://nango.csa.competera.com/connect
-      NANGO_SERVER_WEBSOCKETS_PATH: /socket
+      # URLs (set to your domain if Traefik)
+      NANGO_SERVER_URL: ${NANGO_SERVER_URL:-https://nango.csa.competera.com}
+      NANGO_PUBLIC_SERVER_URL: ${NANGO_PUBLIC_SERVER_URL:-https://nango.csa.competera.com}
 
       # Dashboard auth
-      FLAG_AUTH_ENABLED: true
-      NANGO_DASHBOARD_USERNAME: admin
-      NANGO_DASHBOARD_PASSWORD: ${NANGO_DASHBOARD_PASSWORD}
+      FLAG_AUTH_ENABLED: ${FLAG_AUTH_ENABLED:-true}
+      NANGO_DASHBOARD_USERNAME: ${NANGO_DASHBOARD_USERNAME:-admin}
+      NANGO_DASHBOARD_PASSWORD: ${NANGO_DASHBOARD_PASSWORD:-change-me}
 
-      # Connect UI
-      FLAG_SERVE_CONNECT_UI: true
+      # Connect UI + websockets
+      FLAG_SERVE_CONNECT_UI: ${FLAG_SERVE_CONNECT_UI:-true}
+      NANGO_SERVER_WEBSOCKETS_PATH: ${NANGO_SERVER_WEBSOCKETS_PATH:-/socket}
 
-      # Logging
-      LOG_LEVEL: info
-      NANGO_LOGS_ENABLED: false
-      NANGO_LOGS_ES_URL: http://nango-elasticsearch:9200
-      NANGO_LOGS_ES_USER: ""
-      NANGO_LOGS_ES_PWD: ""
+      # Logging (optional ES)
+      NANGO_LOGS_ENABLED: ${NANGO_LOGS_ENABLED:-false}
+      NANGO_LOGS_ES_URL: ${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+      NANGO_LOGS_ES_USER: ${NANGO_LOGS_ES_USER:-}
+      NANGO_LOGS_ES_PWD: ${NANGO_LOGS_ES_PWD:-}
 
-      # Security / CORS
-      ALLOW_CORS_ORIGIN: "[*]"
-      ALLOW_IFRAME_ORIGIN: "[*]"
-      # removed CSP_REPORT_ONLY (Coolify error)
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CSP_REPORT_ONLY: ${CSP_REPORT_ONLY:-true}
 
+      # (If Nango supports Redis env, add it here; otherwise leave internal/defaults)
+      # NANGO_REDIS_URL: redis://nango-redis:6379
+    # If you're NOT using Traefik yet, expose ports locally:
+    ports:
+      - "${SERVER_PORT:-3003}:${SERVER_PORT:-3003}"
+      - "${NANGO_CONNECT_UI_PORT:-3009}:${NANGO_CONNECT_UI_PORT:-3009}"
     volumes:
       - ./packages/providers/providers.yaml:/packages/providers/providers.yaml:ro
-
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:3003/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${SERVER_PORT:-3003}/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20
-
     networks:
       - nango
-      - a8sk8cg0swg0ww0w0ogoowog
-
+      - traefik
     labels:
+      # --- Traefik (adjust names/entrypoints to your stack) ---
       traefik.enable: "true"
-      traefik.docker.network: "a8sk8cg0swg0ww0w0ogoowog"
 
-      # HTTPS router (main app)
+      # API (port 3003)
       traefik.http.routers.nango.rule: "Host(`nango.csa.competera.com`)"
       traefik.http.routers.nango.entrypoints: "websecure"
       traefik.http.routers.nango.tls: "true"
-      traefik.http.routers.nango.tls.certresolver: "letsencrypt"
+      traefik.http.services.nango.loadbalancer.server.port: "${SERVER_PORT:-3003}"
 
-      # HTTP -> HTTPS redirect
-      traefik.http.routers.nango-http.rule: "Host(`nango.csa.competera.com`)"
-      traefik.http.routers.nango-http.entrypoints: "web"
-      traefik.http.routers.nango-http.middlewares: "redirect-to-https"
-      traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: "https"
-
-      # Upstream port Nango listens on
-      traefik.http.services.nango.loadbalancer.server.port: "3003"
+      # Connect UI (port 3009) – separate router (optional)
+      traefik.http.routers.nango-connect.rule: "Host(`nango.csa.competera.com`) && PathPrefix(`/connect`)"
+      traefik.http.routers.nango-connect.entrypoints: "websecure"
+      traefik.http.routers.nango-connect.tls: "true"
+      traefik.http.services.nango-connect.loadbalancer.server.port: "${NANGO_CONNECT_UI_PORT:-3009}"
